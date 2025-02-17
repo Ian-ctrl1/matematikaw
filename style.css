@@ -1,0 +1,74 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #0b2c52;
+    color: white;
+    text-align: center;
+    margin: 0;
+    padding: 0;
+}
+
+header {
+    background-color: #173b6c;
+    padding: 10px;
+}
+
+h1 {
+    margin: 10px 0;
+}
+
+nav {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-top: 10px;
+}
+
+button.tab {
+    background-color: #173b6c;
+    color: white;
+    border: none;
+    padding: 10px;
+    margin: 5px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+button.tab.active, button.tab:hover {
+    background-color: #ff9800;
+}
+
+main {
+    padding: 20px;
+}
+
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+input {
+    padding: 10px;
+    margin: 10px;
+    width: 80%;
+    max-width: 300px;
+}
+
+button {
+    padding: 10px;
+    background-color: #ff9800;
+    color: white;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+button:hover {
+    background-color: #e68900;
+}
+
+#practice-container {
+    margin-top: 20px;
+}

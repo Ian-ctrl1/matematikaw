@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SCIAN - Advanced Math Helper</title>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/9.4.4/math.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            color: white;
+        }
+        .section {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+        }
+        .tab {
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 10px;
+            border-radius: 10px;
+        }
+        .tab button {
+            background: transparent;
+            border: none;
+            padding: 14px 20px;
+            cursor: pointer;
+            color: white;
+            font-size: 16px;
+        }
+        .tab button.active {
+            background: #ff9800;
+            border-radius: 5px;
+        }
+        .tabcontent {
+            display: none;
+        }
+        input, button {
+            padding: 10px;
+            border-radius: 5px;
+            border: none;
+        }
+        button {
+            background: #ff9800;
+            color: white;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #e68900;
+        }
+        .problem {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        #graphCanvas {
+            width: 600px;
+            height: 400px;
+        }
+        #matrixInput, #matrixResult {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+        #matrixInput input, #matrixResult input {
+            width: 100%;
+            padding: 5px;
+        }
+        #calculusResult {
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+    <h1>SCIAN - Advanced Math Helper</h1>
+    <div class="tab">
+        <button class="tablinks" onclick="openTab(event, 'calculator')" id="defaultOpen">Calculator</button>
+        <button class="tablinks" onclick="openTab(event, 'graphing')">Graphing Calculator</button>
+        <button class="tablinks" onclick="openTab(event, 'matrix')">Matrix Calculator</button>
+        <button class="tablinks" onclick="openTab(event, 'calculus')">Calculus Solver</button>
+        <button class="tablinks" onclick="openTab(event, 'probability')">Probability & Statistics</button>
+        <button class="tablinks" onclick="openTab(event, 'aihelper')">AI Math Helper</button>
+        <button class="tablinks" onclick="openTab(event, 'practice')">Practice Mode</button>
+    </div>
+
+    <div id="calculator" class="tabcontent section">
+        <h2>Calculator</h2>
+        <input type="text" id="calcInput" placeholder="Enter expression">
+        <button onclick="calculate()">Calculate</button>
+        <div id="calcResult"></div>
+    </div>
+
+    <div id="graphing" class="tabcontent section">
+        <h2>Graphing Calculator</h2>
+        <input type="text" id="graphInput" placeholder="Enter function (e.g., x^2 + 2x)">
+        <button onclick="plotGraph()">Plot</button>
+        <canvas id="graphCanvas"></canvas>
+    </div>
+
+    <div id="matrix" class="tabcontent section">
+        <h2>Matrix Calculator</h2>
+        <div>
+            <label for="matrixRows">Rows:</label>
+            <input type="number" id="matrixRows" min="1" value="2">
+            <label for="matrixCols">Columns:</label>
+            <input type="number" id="matrixCols" min="1" value="2">
+        </div>
+        <div id="matrixInput"></div>
+        <button onclick="createMatrix()">Create</button>
+        <button onclick="performMatrixOperation('add')">Add</button>
+        <button onclick="performMatrixOperation('subtract')">Subtract</button>
+        <button onclick="performMatrixOperation('multiply')">Multiply</button>
+        <div id="matrixResult"></div>
+    </div>
+
+    <div id="calculus" class="tabcontent section">
+        <h2>Calculus Solver</h2>
+        <input type="text" id="calculusInput" placeholder="Enter function (e.g., x^2)">
+        <select id="calculusOperation">
+            <option value="derivative">Derivative</option>
+            <option value="integral">Integral</option>
+        </select>
+        <button onclick="computeCalculus()">Compute</button>
+        <div id="calculusResult"></div>
+    </div>
+
+    <div id="probability" class="tabcontent section">
+        <h2>Probability & Statistics</h2>
+        <div>
+            <label for="dataInput">Enter data (comma-separated):</label>
+            <input type="text" id="dataInput" placeholder="1, 2, 3, 4, 5">
+        </div>
+        <button onclick="calculateStats()">Calculate</button>
+        <div id="probabilityResult"></div>
+    </div>
+
+    <div id="aihelper" class="tabcontent section">
+        <h2>AI Math Helper</h2>
+        <input type="text" id="aiQuestion" placeholder="Ask a math question">
+        <button onclick="askAI()">Ask</button>
+        <div id="aiResponse"></div>
+    </div>
+
+    <div id="practice" class="tabcontent section">
+        <h2>Practice Mode</h2>
+        <button onclick="startPractice()">Start Practice</button>
+        <div id="practiceContainer"></div>
+        <div id="practiceFeedback"></div>
+    </div>
+
+    <script>
+        function openTab(evt, tabName) {
+            let tabcontent = document.getElementsByClassName("tabcontent");
+            for (let i = 0; i < tabcontent.length; i++) {
+                tabcontent[i].style.display = "none";
+            }
+            let tablinks = document.getElementsByClassName("tablinks");
+            for (let i = 0; i < tablinks.length; i++) {
+                tablinks[i].className = tablinks[i].className.replace(" active", "");
+            }
+            document.getElementById(tabName).style.display = "block";
+            evt.currentTarget.className += " active";
+        }
+        document.getElementById("defaultOpen").click();
+
+        function calculate() {
+            let input = document.getElementById("calcInput").value;
+            let result = math.evaluate(input);
+            document.getElementById("calcResult").innerHTML = `Result: ${result}`;
+        }
+
+        function plotGraph() {
+            let functionStr = document.getElementById("graphInput").value;
+            let graphCanvas = document.getElementById("graphCanvas");
+            let myChart = new Chart(graphCanvas, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'Function',
+                        data: [],
+                        borderColor: 'rgba(255, 98, 0, 1)',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+            let xValues = [];
+            let yValues = [];
+            for (let i = -10; i <= 10; i++) {
+                xValues.push(i);
+                yValues.push(math.evaluate(functionStr, {x: i}));
+            }
+            myChart.data.labels = xValues;
+            myChart.data.datasets[0].data = yValues;
+            myChart.update();
+        }
+
+        function createMatrix() {
+            let rows = parseInt(document.getElementById("matrixRows").value);
+            let cols = parseInt(document.getElementById("matrixCols").value);
+            let matrixInput = document.getElementById("matrixInput");
+            matrixInput.innerHTML = "";
+            for (let i = 0; i < rows; i++) {
+                for (let j = 0; j < cols; j++) {
+                    matrixInput.innerHTML += `<input type="number" id="matrixElement-${i}-${j}" placeholder="Element ${i + 1}, ${j + 1}">`;
+                }
+            }
+        }
+
+        function performMatrixOperation(operation) {
+            let rows = parseInt(document.getElementById("matrixRows").value);
+            let cols = parseInt(document.getElementById("matrixCols").value);
+            let matrixA = [];
+            let matrixB = [];
+            for (let i = 0; i < rows; i++) {
+                matrixA[i] = [];
+                matrixB[i] = [];
+                for (let j = 0; j < cols; j++) {
+                    matrixA[i][j] = parseFloat(document.getElementById(`matrixElement-${i}-${j}`).value);
+                    matrixB[i][j] = parseFloat(document.getElementById(`matrixElement-${i}-${j}`).value);
+                }
+            }
+            let result;
+            if (operation === 'add') {
+                result = math.add(matrixA, matrixB);
+            } else if (operation === 'subtract') {
+                result = math.subtract(matrixA, matrixB);
+            } else if (operation === 'multiply') {
+                result = math.multiply(matrixA, matrixB);
+            }
+            let matrixResult = document.getElementById("matrixResult");
+            matrixResult.innerHTML = "";
+            for (let i = 0; i < rows; i++) {
+                for (let j = 0; j < cols; j++) {
+                    matrixResult.innerHTML += `<input type="number" value="${result[i][j]}" readonly>`;
+                }
+            }
+        }
+
+        function computeCalculus() {
+            let functionStr = document.getElementById("calculusInput").value;
+            let operation = document.getElementById("calculusOperation").value;
+            let result;
+            if (operation === "derivative") {
+                result = math.derivative(functionStr, 'x').toString();
+            } else {
+                result = math.integral(functionStr, 'x').toString();
+            }
+            document.getElementById("calculusResult").innerHTML = `Result: ${result}`;
+        }
+
+        function calculateStats() {
+            let dataStr = document.getElementById("dataInput").value;
+            let data = dataStr.split(',').map(Number);
+            let mean = math.mean(data);
+            let median = math.median(data);
+            let stdDev = math.std(data);
+            let variance = math.variance(data);
+            document.getElementById("probabilityResult").innerHTML = `Mean: ${mean}, Median: ${median}, Standard Deviation: ${stdDev}, Variance: ${variance}`;
+        }
+
+        function askAI() {
+            let question = document.getElementById("aiQuestion").value;
+            let response;
+            if (question.toLowerCase().includes("derivative")) {
+                response = "To find the derivative, you can use the math.derivative() function in math.js.";
+            } else if (question.toLowerCase().includes("solve")) {
+                response = "For solving equations, you can use the math.solve() function in math.js.";
+            } else {
+                response = "I'm sorry, I'm still under development and can't answer that question yet.";
+            }
+            document.getElementById("aiResponse").innerHTML = `Response: ${response}`;
+        }
+
+        function startPractice() {
+            let container = document.getElementById("practiceContainer");
+            container.innerHTML = "";
+            let topics = ["Ratio & Proportion", "Percentages", "Calculus", "Geometry", "Algebra", "Statistics"];
+            for (let i = 0; i < 100; i++) {
+                let topic = topics[Math.floor(Math.random() * topics.length)];
+                let problem = generateProblem(topic);
+                container.innerHTML += `<div class='problem'>${i + 1}. ${problem.question} <input type='text' id='answer${i}'> <button onclick='checkAnswer(${i}, "${problem.answer}")'>Check</button></div>`;
+            }
+        }
+
+        function generateProblem(topic) {
+            if (topic === "Ratio & Proportion") {
+                let a = Math.floor(Math.random() * 10) + 1;
+                let b = Math.floor(Math.random() * 10) + 1;
+                let c = Math.floor(Math.random() * 10) + 1;
+                let answer = (b * c) / a;
+                return { question: `If ${a}:${b} = ${c}:x, find x.`, answer: answer.toFixed(2) };
+            } else if (topic === "Percentages") {
+                let num = Math.floor(Math.random() * 100) + 1;
+                let percent = Math.floor(Math.random() * 50) + 1;
+                let answer = (num * percent) / 100;
+                return { question: `What is ${percent}% of ${num}?`, answer: answer.toFixed(2) };
+            } else if (topic === "Calculus") {
+                return { question: "Differentiate x^2.", answer: "2x" };
+            } else if (topic === "Geometry") {
+                return { question: "Find the area of a circle with radius 5.", answer: "78.54" };
+            } else {
+                return { question: "Solve 2x + 5 = 15.", answer: "5" };
+            }
+        }
+
+        function checkAnswer(index, correctAnswer) {
+            let userAnswer = document.getElementById(`answer${index}`).value;
+            let feedback = document.getElementById("practiceFeedback");
+            if (userAnswer === correctAnswer) {
+                feedback.innerHTML = "Correct!";
+            } else {
+                feedback.innerHTML = `Incorrect. The correct answer is ${correctAnswer}`;
+            }
+        }
+    </script>
+</body>
+</html>
